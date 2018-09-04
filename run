@@ -1,0 +1,17 @@
+#!/bin/bash
+
+PGPASSWORD=postgres \
+psql -h localhost -U postgres -c "CREATE DATABASE pet_store"
+
+echo "Running mode $MODE"
+
+# If you want to optimize the memory usage...
+#export SBT_OPTS="-Xmx512M -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1024M -Xss2M"
+
+if [ "$MODE" = "production" ]; then
+    PROPERTIES="-Dlogback.configurationFile=src/main/resources/logback-prod.xml"
+else
+    PROPERTIES="-Dlogback.configurationFile=src/main/resources/logback.xml"
+fi
+
+./sbt $PROPERTIES run
