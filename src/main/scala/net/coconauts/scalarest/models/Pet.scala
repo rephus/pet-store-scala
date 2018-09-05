@@ -2,6 +2,7 @@ package net.coconauts.scalarest.models
 
 import net.coconauts.scalarest.models.PetStatus.PetStatus
 import net.coconauts.scalarest.{Global, Utils}
+import org.slf4j.LoggerFactory
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -46,6 +47,8 @@ class Pets(tag: Tag) extends Table[Pet](tag, "pet") {
 
 object Pets {
 
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
   import scala.slick.driver.PostgresDriver.simple._
 
   lazy val objects = TableQuery[Pets]
@@ -59,13 +62,12 @@ object Pets {
     inserting += pet
   }
   def update(pet: Pet)(implicit session: Session) = {
-    println("UPDATING " , pet.id)
+    logger.info("Updating pet " + pet.id)
     objects.filter(_.id === pet.id).update(pet)
   }
 
   def delete(id: Int)(implicit session: Session) = {
-    println("deleting " ,id)
-
+    logger.info("Deleting pet " + id)
     objects.filter(_.id === id).delete
   }
 

@@ -42,7 +42,6 @@ class UserControllerIntegrationTest extends Specification with Specs2RouteTest w
         status === OK
 
         val savedUser = responseAs[User]
-        savedUser.id must beSome[Int]
         savedUser.email === user.email
       }
 

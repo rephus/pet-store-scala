@@ -8,7 +8,7 @@ import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.lifted._
 import scala.util.Random
 
-case class Order(id: Option[Int] = None, complete: Boolean, petId: Int, quantity: Int, status: OrderStatus)
+case class Order(id: Int, complete: Boolean, petId: Int, quantity: Int, status: OrderStatus)
 
 
 object OrderStatus extends Enumeration {
@@ -35,12 +35,12 @@ class Orders(tag: Tag) extends Table[Order](tag, "order") {
   def quantity = column[Int]("quantity")
   def status = column[OrderStatus]("status")
 
-  def * = (id.?, complete, petId, quantity, status) <>(Order.tupled, Order.unapply)
+  def * = (id, complete, petId, quantity, status) <>(Order.tupled, Order.unapply)
 }
 
 object Orders {
 
-  import scala.slick.driver.JdbcDriver.simple._
+  import scala.slick.driver.PostgresDriver.simple._
 
   lazy val objects = TableQuery[Orders]
 
@@ -59,7 +59,7 @@ object Orders {
     */
   def random: Order = {
     Order(
-      id = Some(Math.abs(Random.nextInt)),
+      id = Math.abs(Random.nextInt),
       complete = false,
       petId = Math.abs(Random.nextInt),
       quantity = Math.abs(Random.nextInt),
@@ -72,7 +72,7 @@ object OrderJsonProtocol extends DefaultJsonProtocol {
   //implicit val OrderFormat = jsonFormat5(Order)
   implicit object OrderFormat extends JsonFormat[Order] {
     def write(order: Order) = JsObject(
-      "id" -> JsNumber(order.id.get),
+      "id" -> JsNumber(order.id),
       "complete" -> JsBoolean(order.complete),
       "petId" -> JsNumber(order.quantity),
       "quantity" -> JsNumber(order.quantity),
@@ -81,7 +81,7 @@ object OrderJsonProtocol extends DefaultJsonProtocol {
     def read(value: JsValue) = {
       value.asJsObject.getFields("id", "complete", "petId", "quantity", "status") match {
         case Seq(JsNumber(id), JsBoolean(complete), JsNumber(petId),  JsNumber(quantity), JsString(status)) =>
-          new Order(id=Some(id.toInt),
+          new Order(id=id.toInt,
               complete = complete,
               petId = petId.toInt,
               quantity = quantity.toInt,

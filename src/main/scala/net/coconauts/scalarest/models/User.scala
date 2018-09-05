@@ -7,7 +7,7 @@ import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.lifted._
 import scala.util.Random
 
-case class User(id: Option[Int] = None, email: String = "", password: String = "")
+case class User(id: Int, email: String, password: String)
 
 class Users(tag: Tag) extends Table[User](tag, "user") {
 
@@ -17,12 +17,12 @@ class Users(tag: Tag) extends Table[User](tag, "user") {
   def password = column[String]("password")
 
 
-  def * = (id.?, email, password) <>(User.tupled, User.unapply)
+  def * = (id, email, password) <>(User.tupled, User.unapply)
 }
 
 object Users {
 
-  import scala.slick.driver.JdbcDriver.simple._
+  import scala.slick.driver.PostgresDriver.simple._
 
   lazy val objects = TableQuery[Users]
 
@@ -41,7 +41,7 @@ object Users {
     */
   def random: User = {
     User(
-      id = Some(Math.abs(Random.nextInt)),
+      id = Math.abs(Random.nextInt),
       email = s"${Utils.randomString}@${Utils.randomString}.com",
       password = Utils.randomString
     )

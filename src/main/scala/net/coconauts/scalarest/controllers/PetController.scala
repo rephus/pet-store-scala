@@ -14,36 +14,51 @@ trait PetController extends HttpService {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   val petRoutes =
-    path("pet" / Segment) { id =>
-      get {
-        logger.debug(s"Received request GET '/pet/$id' ")
-        implicit val s = Global.db.createSession()
+    path("pet" / IntNumber) { id =>
+      pathEnd {
 
-        rejectEmptyResponse {
-          val pet = Pets.objects.filter(_.id === id.toInt).list.headOption
+        put {
+          entity(as[Pet]) { pet =>
 
-          complete(pet)
-        }
-      } ~
-      put {
-        entity(as[Pet]) { Pet =>
-          logger.debug(s"Received request PUT '/pet/$id' ")
-          implicit val s = Global.db.createSession()
+            complete{
+              logger.info(s"Received request PUT '/pet/$id' " )
+              implicit val s = Global.db.createSession()
+              Pets.update(pet)
 
-          rejectEmptyResponse {
-            val pet = Pets.objects.filter(_.id === id.toInt).list.headOption
+              pet
+            }
+         }
+        } ~
+          get {
 
-            complete(pet)
+            complete {
+              logger.info(s"Received request PUT '/pet/$id' " )
+              println("PARAMETER " , parameter('method))
+              implicit val s = Global.db.createSession()
+
+              val pet = Pets.objects.filter(_.id === id.toInt).list.headOption
+
+              pet
+            }
+          } ~
+          delete {
+
+            complete{
+              logger.info(s"Received request DELETE '/pet/$id' ")
+
+              implicit val s = Global.db.createSession()
+
+              Pets.delete(id.toInt)
+              ""
+            }
           }
-        }
       }
-
-    } ~ path("pet") {
+    }~ path("pet") {
       post {
         //This entity parses all the PUT body and convert it into a Pet model
         entity(as[Pet]) { Pet =>
 
-          logger.debug(s"Received request PUT '/pet' $Pet")
+          logger.debug(s"Received request ${parameter('method)} '/pet' $Pet")
           implicit val s = Global.db.createSession()
 
           val id = Pets.insert(Pet)

@@ -15,7 +15,7 @@ class UserTest extends Specification {
       val json = user.toJson
 
       val expected: Map[String, JsValue] = Map(
-          "id" -> JsNumber(user.id.get),
+          "id" -> JsNumber(user.id),
           "email" -> JsString(user.email),
           "password" -> JsString(user.password)
       )
@@ -27,7 +27,7 @@ class UserTest extends Specification {
       val user = Users.random
 
       val map: Map[String, JsValue] = Map(
-        "id" -> JsNumber(user.id.get),
+        "id" -> JsNumber(user.id),
         "email" -> JsString(user.email),
         "password" -> JsString(user.password)
       )
