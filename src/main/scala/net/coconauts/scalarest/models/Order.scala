@@ -54,6 +54,9 @@ object Orders {
     objects.filter(_.id === id).list.headOption
   }
 
+  def delete(id: Int)(implicit session: Session) = {
+    objects.filter(_.id === id).delete
+  }
   /**
     * Creates a new random Order, useful for tests
     */
@@ -70,13 +73,13 @@ object Orders {
 
 object OrderJsonProtocol extends DefaultJsonProtocol {
   //implicit val OrderFormat = jsonFormat5(Order)
-  implicit object OrderFormat extends JsonFormat[Order] {
+  implicit object OrderFormat extends RootJsonFormat[Order] {
     def write(order: Order) = JsObject(
       "id" -> JsNumber(order.id),
       "complete" -> JsBoolean(order.complete),
-      "petId" -> JsNumber(order.quantity),
+      "petId" -> JsNumber(order.petId),
       "quantity" -> JsNumber(order.quantity),
-      "status" -> JsString(OrderStatus.toString)
+      "status" -> JsString(order.status.toString)
     )
     def read(value: JsValue) = {
       value.asJsObject.getFields("id", "complete", "petId", "quantity", "status") match {

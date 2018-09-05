@@ -1,11 +1,13 @@
 import org.flywaydb.sbt.FlywayPlugin.autoImport._
-import sbt.Keys._
+import sbt.Keys.{mainClass, _}
 import sbt._
 
 lazy val commonSettings = Seq(
   scalaVersion := "2.11.6",
   organization := "net.coconauts",
-  version := "0.1"
+  version := "0.1",
+  name := "pet-store"
+
 )
 
 val akkaV = "2.3.9"
@@ -20,6 +22,7 @@ def isUnitTest(name: String): Boolean = !isIntegrationTest(name)
 
 lazy val ITTest = config("it") extend Test
 
+
 lazy val root = (project in file("."))
 
   .configs(ITTest)
@@ -28,8 +31,9 @@ lazy val root = (project in file("."))
     testOptions in Test := Seq(Tests.Filter(isUnitTest)),
     testOptions in ITTest := Seq(Tests.Filter(isIntegrationTest)),
 
-    parallelExecution in Test := true,
-    parallelExecution in ITTest := false
+    parallelExecution in Test := false,
+    parallelExecution in ITTest := false,
+
   )
   .settings(
     libraryDependencies ++= Seq(

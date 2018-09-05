@@ -1,76 +1,96 @@
-### Scala REST template
+### Scala REST pet store service
 
 Scala REST skeleton service that features:
 
 * Akka 2.3.9
 * Spray 1.3
-* Spray-json 1.3
 * Slick 2.1 (using postgresql connector)
-
-### Run server (with local dependencies)
-
-    ./sbt run
-
-### Run tests
-
-    ./sbt test
-
-### Useful documentation
-
-* [Matcher on tests using specs2](https://etorreborre.github.io/specs2/guide/SPECS2-3.0/org.specs2.guide.Matchers.html)
-* [Mockito usage specs2](https://etorreborre.github.io/specs2/guide/SPECS2-3.0/org.specs2.guide.UseMockito.html)
-* [Quick guide to scala features: Scala wat](http://seanparsons.github.io/scalawat/Values+and+variables.html)
-* [Slick 2.1 documentation](http://slick.typesafe.com/doc/2.1.0/)
 
 ## Docker setup
 
 Requires docker and docker-compose
 
-### Install dependencies
+    Note: Dependencies and sbt could take a while to download
 
-If you haven't start by pulling all the dependencies (and sbt 0.13), this only needs to be done once,
-or everytime you change your Dockerfile or build.sbt
+    docker-compose up -d postgres
+    docker-compose up pet_store
 
-    docker-compose build
+    Once running, endpoint will be available on localhost:8000
 
-There are a few different ways to speed up this build, like using a different docker base image from dockerhub,
-with sbt and some dependecies already installed.
 
-### Migrate schema
+## Run server (with local dependencies)
 
-Run the flywayMigrate command to update the database schema
+    ./run or ./sbt run
 
-    docker-compose run scalarest bash -c "./sbt flywayMigrate"
 
-Also, our `docker-compose run scalarest ./run` do migrate.
+## Run tests
 
-If you want to add new migrations, just add new SQL files into `src/main/resources/db.migration`
+    ./test or ./sbt test
 
-### Run
 
-    docker-compose up
+## Assumptions
 
-Run with different config settings:
+- Passwords are not encrypted. This is trivial, but some discussion is needed to decide how to encrypt the password and which encryption to use (SHA1?)
+- Although the URLs are supposed to have a versioning system (v2), I think this is something could be specified in the gateway/proxy placed behind this webapp (like nginx).
+    This will allow us to trully support multiples version of the API living together. If not, we could easily add "v2" as prefix to all endpoints
+- No foreign keys have been defined in the database (like petId on order), it should be done, but it doesn't provide any practical value on this excersise.
+- Primary keys for all 3 tables are using Autoincremental (serial) values on Postgres to respect the swagger specification, however, it might be advisable to use UUIDs (string) instead.
+- A few basic endpoints are missing from the specification, in order to match the swagger specification. Such as GET/PUT/DELETE user or some generic GET all pets (with or without filters) might be done at some point.
+- There are not many specific HTTP errors based on invalid forms or data types on the API, this can be done easily with some map-matching functions on the controllers.
+- The database is created on the ./run script, migrations (flyway) are updating the schema on service startup
+- This project is ready to run in development mode. For production, a binary jar file can be distributed
 
-    docker-compose run --service-ports scalarest bash -c 'export MODE=production && ./sbt run'
+## Sample curls
 
-### Test
+POST a pet
 
-Tests unit tests and integration (it) tests alltogether. Run this first to initialize test database too.
+```
+curl -X POST "localhost:8000/pet" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"id\": 0, \"name\": \"doggie\", \"photoUrls\": [ \"string\" ], \"status\": \"available\"}"
+```
 
-    docker-compose run scalarest ./test
+GET a pet
+```
+curl -X GET "localhost:8000/pet/2"
+{
+  "id": 2,
+  "name": "doggie",
+  "photoUrls": ["string"],
+  "status": "available"
+}
+```
 
-or run specified unit test continuously
+GET filter by status
 
-    docker-compose run scalarest bash -c "./sbt '~test-only *UserTest*'"
+```
+curl -X GET "localhost:8000/pet/findByStatus?status=available"
 
-or run integration tests (it flag)
+[{
+  "id": 1,
+  "name": "doggie",
+  "photoUrls": ["string"],
+  "status": "available"
+}, {
+  "id": 2,
+  "name": "doggie",
+  "photoUrls": ["string"],
+  "status": "available"
+}, {
+  "id": 3,
+  "name": "doggie",
+  "photoUrls": ["string"],
+  "status": "available"
+}]
+```
 
-    docker-compose run scalarest bash -c "./sbt '~it:test-only *UserIntegrationTest*'"
+POST an order
 
-## Troubleshooting
+```
+curl -X POST "localhost:8000/store/order" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"complete\": false, \"id\": 0, \"petId\": 0, \"quantity\": 0, \"status\": \"placed\"}"
+```
 
-If you get a `java.io.IOException: Permmission denied (Boot.scala)` when importing the project to IntelliJ or running `./sbt`
-make sure your `project` and `target` folder has the right permissions.
+POST an user
 
-    sudo chmod 777 -R project target
+```
+curl -X POST "localhost:8000/user" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"email\": \"string\", \"id\": 0, \"password\": \"string\"}"
+```
+

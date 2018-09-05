@@ -1,5 +1,5 @@
 #!/bin/bash
 
 PGPASSWORD=postgres \
-psql -h localhost -U postgres -c "DROP DATABASE pet_store_test; SECREATE DATABASE pet_store_test"
+psql -h postgres -U postgres -c "DROP DATABASE pet_store_test; SECREATE DATABASE pet_store_test"
 ./sbt coverage test it:test coverageReport

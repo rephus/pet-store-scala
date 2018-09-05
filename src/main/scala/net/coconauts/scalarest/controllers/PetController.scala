@@ -34,12 +34,9 @@ trait PetController extends HttpService {
 
             complete {
               logger.info(s"Received request PUT '/pet/$id' " )
-              println("PARAMETER " , parameter('method))
               implicit val s = Global.db.createSession()
 
-              val pet = Pets.objects.filter(_.id === id.toInt).list.headOption
-
-              pet
+              Pets.get(id)
             }
           } ~
           delete {

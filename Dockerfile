@@ -9,8 +9,7 @@ EXPOSE 8080
 RUN mkdir /code
 WORKDIR /code
 
-ENV RUN_DEPS   postgresql git
-RUN apk update && apk add $RUN_DEPS $BUILD_DEPS
+RUN apk update && apk add postgresql git
 
 ADD . /code/
 

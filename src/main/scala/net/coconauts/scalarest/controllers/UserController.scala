@@ -2,18 +2,10 @@ package net.coconauts.scalarest.controllers
 
 import net.coconauts.scalarest.{Global, MaybeFilter}
 import net.coconauts.scalarest.models._
-import spray.json.JsNumber
-import spray.routing._
 import org.slf4j.LoggerFactory
-import spray.routing._
 import spray.httpx.SprayJsonSupport._
 import spray.routing._
-import spray.json._
-import DefaultJsonProtocol._
 import net.coconauts.scalarest.models.UserJsonProtocol._
-import spray.json._
-
-import scala.slick.driver.JdbcDriver.simple._
 
 trait UserController extends HttpService {
 
