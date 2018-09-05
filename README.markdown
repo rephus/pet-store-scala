@@ -6,24 +6,46 @@ Scala REST skeleton service that features:
 * Spray 1.3
 * Slick 2.1 (using postgresql connector)
 
-## Docker setup
+## Run binary
+
+![pet_store.gif](pet_store.gif)
+
+First run database locally, this app requires a database postgresql "pet_store" running on localhost:5432
+
+    docker-compose up -d postgres
+    ./create_database
+
+Then run the main app
+
+    java -jar pet-store.jar
+
+Once running, endpoint will be available on localhost:8000
+
+    curl -X POST "localhost:8000/user" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"email\": \"string\", \"id\": 0, \"password\": \"string\"}"
+
+
+## Run source code
+
+### Run with docker !!
 
 Requires docker and docker-compose
 
     Note: Dependencies and sbt could take a while to download
+    Also note: Change the address of postgres on application.conf from "localhost" to "postgres"
 
     docker-compose up -d postgres
     docker-compose up pet_store
 
-    Once running, endpoint will be available on localhost:8000
-
-
-## Run server (with local dependencies)
+### Run server (with local dependencies)
 
     ./run or ./sbt run
 
+Then you can generate a new runnable .jar package with
 
-## Run tests
+    ./sbt assembly
+
+
+### Run tests
 
     ./test or ./sbt test
 

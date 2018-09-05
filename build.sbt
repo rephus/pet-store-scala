@@ -32,8 +32,7 @@ lazy val root = (project in file("."))
     testOptions in ITTest := Seq(Tests.Filter(isIntegrationTest)),
 
     parallelExecution in Test := false,
-    parallelExecution in ITTest := false,
-
+    parallelExecution in ITTest := false
   )
   .settings(
     libraryDependencies ++= Seq(
