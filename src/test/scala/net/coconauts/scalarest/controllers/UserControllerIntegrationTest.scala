@@ -15,16 +15,6 @@ class UserControllerIntegrationTest extends Specification with Specs2RouteTest w
 
   "User service" should {
 
-    "return a user with id 1" in {
-
-      implicit val s = Global.db.createSession()
-      val userId = Users.insert(Users.random)
-
-      Get("v2/user/" + userId) ~> userRoutes ~> check {
-        responseAs[User].id.get === userId
-      }
-    }
-
     "leave GET requests to other paths unhandled" in {
       Get("/") ~> userRoutes ~> check {
         handled must beFalse
@@ -32,9 +22,9 @@ class UserControllerIntegrationTest extends Specification with Specs2RouteTest w
     }
 
     "return a MethodNotAllowed error for GET requests to the `/user` path" in {
-      Put("v2/user") ~> sealRoute(userRoutes) ~> check {
+      Put("/user") ~> sealRoute(userRoutes) ~> check {
         status === MethodNotAllowed
-        responseAs[String] === "HTTP method not allowed, supported methods: GET, POST"
+        responseAs[String] === "HTTP method not allowed, supported methods: POST"
       }
     }
 
@@ -44,21 +34,11 @@ class UserControllerIntegrationTest extends Specification with Specs2RouteTest w
         responseAs[String] === "Request entity expected but not supplied"
       }
     }
-    "List users" in {
-      Get("v2/user") ~> sealRoute(userRoutes) ~> check {
-
-        status === OK
-
-        val response = responseAs[Map[String, JsValue]]
-        response("count").toString.toInt must be greaterThan (0)
-      }
-    }
-
 
     "Save user" in {
 
       val user = Users.random
-      Post("v2/user", user) ~> sealRoute(userRoutes) ~> check {
+      Post("/user", user) ~> sealRoute(userRoutes) ~> check {
         status === OK
 
         val savedUser = responseAs[User]

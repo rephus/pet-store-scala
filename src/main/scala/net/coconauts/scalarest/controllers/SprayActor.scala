@@ -4,13 +4,13 @@ import akka.actor.Actor
 
 class SprayActor extends Actor
   with UserController
-  //with StatusController
+  with PetController
   {
 
   def actorRefFactory = context
 
   val routes = {
-    userRoutes // ~
+    userRoutes ~ petRoutes
   }
 
   def receive = runRoute(routes)

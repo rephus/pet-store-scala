@@ -3,10 +3,12 @@ package net.coconauts.scalarest.models
 import net.coconauts.scalarest.models.PetStatus.PetStatus
 import net.coconauts.scalarest.{Global, Utils}
 import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.lifted._
 import scala.util.Random
+import scala.util.regexp.Base
 
 case class Pet(id: Option[Int] = None, name: String, photoUrls: List[String], status: PetStatus)
 
@@ -71,9 +73,21 @@ object Pets {
 
 }
 
+
+
+/*
+implicit def PetStatusFormat: RootJsonFormat[enum.Value] = {
+  //implicit val PetFormat = jsonFormat5(Pet)
+  def write(petStatus: PetStatus) = JsString(petStatus.toString)
+  def read(value: JsString) = PetStatus.withName(value.value)
+}*/
+
 object PetJsonProtocol extends DefaultJsonProtocol {
   //implicit val PetFormat = jsonFormat5(Pet)
-  implicit object PetFormat extends JsonFormat[Pet] {
+
+  //implicit val petFormat = jsonFormat4(Pet)
+
+  implicit object petFormat extends RootJsonFormat[Pet] {
     def write(pet: Pet) = JsObject(
       "id" -> JsNumber(pet.id.get),
       "name" -> JsString(pet.name),
