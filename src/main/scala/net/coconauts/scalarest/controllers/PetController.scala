@@ -1,6 +1,7 @@
 package net.coconauts.scalarest.controllers
 
 import net.coconauts.scalarest.models.PetJsonProtocol._
+import net.coconauts.scalarest.models.PetStatus.PetStatus
 import net.coconauts.scalarest.models._
 import net.coconauts.scalarest.{Global, MaybeFilter}
 import org.slf4j.LoggerFactory
@@ -17,13 +18,13 @@ trait PetController extends HttpService {
     path("pet" / IntNumber) { id =>
       pathEnd {
 
-        put {
+        post {
           entity(as[Pet]) { pet =>
 
             complete{
               logger.info(s"Received request PUT '/pet/$id' " )
               implicit val s = Global.db.createSession()
-              Pets.update(pet)
+              Pets.update(pet.copy(id=id))
 
               pet
             }
@@ -53,20 +54,52 @@ trait PetController extends HttpService {
             }
           }
       }
-    }~ path("pet") {
+    } ~ path("pet") {
+      put {
+        //This entity parses all the PUT body and convert it into a Pet model
+        entity(as[Pet]) { pet =>
+
+          complete{
+            logger.debug(s"Received PUT '/pet' $pet")
+            implicit val s = Global.db.createSession()
+
+            Pets.update(pet)
+            pet
+          }
+        }
+      } ~
       post {
         //This entity parses all the PUT body and convert it into a Pet model
-        entity(as[Pet]) { Pet =>
+        entity(as[Pet]) { pet =>
 
-          logger.debug(s"Received request ${parameter('method)} '/pet' $Pet")
-          implicit val s = Global.db.createSession()
+          complete{
+            logger.debug(s"Received request POST '/pet' $pet")
+            implicit val s = Global.db.createSession()
 
-          val id = Pets.insert(Pet)
-          logger.info(s"Inserted Pet with id ${id}")
+            val id = Pets.insert(pet)
+            logger.info(s"Inserted Pet with id ${id}")
+            val insertedPet = Pets.get(id).get
 
-          val insertedPet = Pets.get(id).get
-          complete(insertedPet)
+            insertedPet
+          }
         }
+      }
+    }  ~ path("pet" / "findByStatus") {
+      get {
+        parameters('status) { (status) =>
+
+          complete {
+            implicit val petStatusMapper = MappedColumnType.base[PetStatus, String](
+              e => e.toString,
+              s => PetStatus.withName(s)
+            )
+
+            implicit val s = Global.db.createSession()
+            val petStatus = PetStatus.withName(status)
+            Pets.objects.filter(_.status === petStatus).list
+          }
+        }
+
       }
     }
 }
