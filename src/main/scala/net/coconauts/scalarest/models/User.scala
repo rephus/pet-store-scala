@@ -3,7 +3,7 @@ package net.coconauts.scalarest.models
 import net.coconauts.scalarest.{Global, Utils}
 import spray.json._
 
-import scala.slick.driver.JdbcDriver.simple._
+import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.lifted._
 import scala.util.Random
 

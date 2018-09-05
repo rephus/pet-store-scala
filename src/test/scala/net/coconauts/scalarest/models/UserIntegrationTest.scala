@@ -25,26 +25,10 @@ class UserIntegrationTest extends Specification with JsonMatchers with PostgresT
       val randomUser = Users.random
       val id = Users.insert(randomUser)
 
-      val user = Users.objects.filter(_.id === id).list.head
+      val user = Users.get(id).get
 
       randomUser.email === user.email
-    }
-
-    "Create" in {
-
-      implicit val s = Global.db.createSession()
-
-      val randomUser = Users.random
-
-      println("Saving random user ", randomUser)
-      val noneUser = Users.objects.filter(_.email === randomUser.email).list.headOption
-      noneUser must beNone
-
-      val createUserId = Users.insert(randomUser)
-      val createUser = Users.get(createUserId).get
-
-      randomUser.email === createUser.email
-      createUser.id must beSome[Int]
+      randomUser.password === user.password
 
     }
   }
