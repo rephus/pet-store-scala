@@ -9,8 +9,9 @@ import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.lifted._
 import scala.util.Random
 import scala.util.regexp.Base
+import scala.slick.jdbc.{GetResult, StaticQuery}
 
-case class Pet(id: Option[Int] = None, name: String, photoUrls: List[String], status: PetStatus)
+case class Pet(id: Int, name: String, photoUrls: List[String], status: PetStatus)
 
 
 object PetStatus extends Enumeration {
@@ -40,19 +41,32 @@ class Pets(tag: Tag) extends Table[Pet](tag, "pet") {
   def photoUrls = column[List[String]]("photo_urls")
   def status = column[PetStatus]("status")
 
-  def * = (id.?, name, photoUrls, status) <>(Pet.tupled, Pet.unapply)
+  def * = (id, name, photoUrls, status) <>(Pet.tupled, Pet.unapply)
 }
 
 object Pets {
 
-  import scala.slick.driver.JdbcDriver.simple._
+  import scala.slick.driver.PostgresDriver.simple._
 
   lazy val objects = TableQuery[Pets]
 
-  def insert(Pet: Pet)(implicit session: Session): Int = {
-
+  def insert(pet: Pet)(implicit session: Session): Int = {
+    //val id = StaticQuery.queryNA[Int]("select nextval('pet_id_seq')").first
+    //objects.insert(pet.copy(id=id))
+    //print("INSERTED" , id)
+    //id
     val inserting = objects returning objects.map(_.id)
-    inserting += Pet
+    inserting += pet
+  }
+  def update(pet: Pet)(implicit session: Session) = {
+    println("UPDATING " , pet.id)
+    objects.filter(_.id === pet.id).update(pet)
+  }
+
+  def delete(id: Int)(implicit session: Session) = {
+    println("deleting " ,id)
+
+    objects.filter(_.id === id).delete
   }
 
   def get(id: Int)(implicit session: Session): Option[Pet] = {
@@ -64,7 +78,7 @@ object Pets {
     */
   def random: Pet = {
     Pet(
-      id = Some(Math.abs(Random.nextInt)),
+      id = Math.abs(Random.nextInt),
       name = Utils.randomString,
       photoUrls = List(Utils.randomString),
       status = PetStatus.available
@@ -89,7 +103,7 @@ object PetJsonProtocol extends DefaultJsonProtocol {
 
   implicit object petFormat extends RootJsonFormat[Pet] {
     def write(pet: Pet) = JsObject(
-      "id" -> JsNumber(pet.id.get),
+      "id" -> JsNumber(pet.id),
       "name" -> JsString(pet.name),
       "photoUrls" -> JsArray(pet.photoUrls.map(JsString(_))),
       "status" -> JsString(pet.status.toString)
@@ -97,7 +111,7 @@ object PetJsonProtocol extends DefaultJsonProtocol {
     def read(value: JsValue) = {
       value.asJsObject.getFields("id", "name", "photoUrls", "status") match {
         case Seq(JsNumber(id), JsString(name), JsArray(photoUrls),  JsString(status)) =>
-          new Pet(id=Some(id.toInt),
+          new Pet(id=id.toInt,
               name=name,
               photoUrls = photoUrls.map(_.convertTo[String]).to[List],
               status = PetStatus.withName(status))

@@ -24,7 +24,20 @@ trait PetController extends HttpService {
 
           complete(pet)
         }
+      } ~
+      put {
+        entity(as[Pet]) { Pet =>
+          logger.debug(s"Received request PUT '/pet/$id' ")
+          implicit val s = Global.db.createSession()
+
+          rejectEmptyResponse {
+            val pet = Pets.objects.filter(_.id === id.toInt).list.headOption
+
+            complete(pet)
+          }
+        }
       }
+
     } ~ path("pet") {
       post {
         //This entity parses all the PUT body and convert it into a Pet model

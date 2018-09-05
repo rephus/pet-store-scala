@@ -52,7 +52,7 @@ class PetControllerIntegrationTest extends Specification with Specs2RouteTest wi
       val petId = Pets.insert(Pets.random)
 
       Get("/pet/" + petId) ~> petRoutes ~> check {
-        responseAs[Pet].id.get === petId
+        responseAs[Pet].id === petId
       }
     }
 
@@ -64,7 +64,29 @@ class PetControllerIntegrationTest extends Specification with Specs2RouteTest wi
         status === OK
 
         val savedPet = responseAs[Pet]
-        savedPet.id must beSome[Int]
+
+        savedPet.name === pet.name
+        savedPet.photoUrls must not be empty
+        savedPet.photoUrls === pet.photoUrls
+        savedPet.status === pet.status
+      }
+
+    }
+
+    "Update pet" in {
+      implicit val s = Global.db.createSession()
+
+      // Save a pet to overwrite later
+      val oldPet = Pets.random
+      val petId = Pets.insert(oldPet)
+
+      val pet = Pets.random
+      Put("/pet/" + petId, pet) ~> sealRoute(petRoutes) ~> check {
+        status === OK
+
+        val savedPet = responseAs[Pet]
+        savedPet.id === Some(petId) /// same petId
+        savedPet.name !== oldPet.name
         savedPet.name === pet.name
       }
 

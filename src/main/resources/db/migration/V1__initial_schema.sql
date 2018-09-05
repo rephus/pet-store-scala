@@ -5,7 +5,7 @@ CREATE TABLE "user"(
 );
 
 CREATE TABLE "pet"(
-    id SERIAL,
+    id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     photo_urls TEXT,
     status TEXT

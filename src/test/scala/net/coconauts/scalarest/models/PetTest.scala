@@ -24,7 +24,7 @@ class PetTest extends Specification {
       val pet = Pets.random
 
       val map: Map[String, JsValue] = Map(
-        "id" -> JsNumber(pet.id.get),
+        "id" -> JsNumber(pet.id),
         "name" -> JsString(pet.name),
         "photoUrls" -> JsArray(pet.photoUrls.map(JsString(_))),
         "status" -> JsString(pet.status.toString)
