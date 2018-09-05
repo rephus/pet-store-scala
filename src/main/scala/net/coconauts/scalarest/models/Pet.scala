@@ -87,7 +87,7 @@ object PetJsonProtocol extends DefaultJsonProtocol {
               name=name,
               photoUrls = photoUrls.map(_.convertTo[String]).to[List],
               status = PetStatus.withName(status))
-        case _ => throw new DeserializationException("Tweets expected")
+        case _ => throw new DeserializationException("Pet expected")
       }
     }
   }
